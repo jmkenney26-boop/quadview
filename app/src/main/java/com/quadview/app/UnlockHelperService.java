@@ -3,6 +3,9 @@ package com.quadview.app;
 import android.accessibilityservice.AccessibilityService;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Looper;
+import android.view.accessibility.AccessibilityWindowInfo;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.accessibility.AccessibilityNodeInfo;
 
@@ -64,11 +67,59 @@ public class UnlockHelperService extends AccessibilityService {
 
         if (event.getEventType() == AccessibilityEvent.TYPE_WINDOW_STATE_CHANGED) {
             log(this, "screen: " + event.getClassName());
+            startPolling();
         }
+        AccessibilityNodeInfo src = event.getSource();
+        if (src != null) scan(src, 0);
+        scanAll();
+    }
 
+    private final Handler handler = new Handler(Looper.getMainLooper());
+    private long pollUntil;
+    private int polls;
+    private int maxNodes;
+
+    /** Looks at the screen every frame for 3 seconds instead of waiting for change notices. */
+    private void startPolling() {
+        pollUntil = System.currentTimeMillis() + 3000;
+        polls = 0;
+        maxNodes = 0;
+        handler.removeCallbacksAndMessages(null);
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                scanAll();
+                polls++;
+                if (System.currentTimeMillis() < pollUntil) {
+                    handler.postDelayed(this, 8);
+                } else {
+                    log(UnlockHelperService.this, "polled " + polls + " times, most items seen at once: " + maxNodes);
+                }
+            }
+        });
+    }
+
+    private void scanAll() {
+        try {
+            for (AccessibilityWindowInfo w : getWindows()) {
+                AccessibilityNodeInfo r = w.getRoot();
+                if (r == null) continue;
+                CharSequence pkg = r.getPackageName();
+                if (pkg != null && pkg.toString().equals(getPackageName())) continue;
+                maxNodes = Math.max(maxNodes, count(r, 0));
+                scan(r, 0);
+            }
+        } catch (Throwable ignored) {
+        }
         AccessibilityNodeInfo root = getRootInActiveWindow();
-        if (root == null) return;
-        scan(root, 0);
+        if (root != null) scan(root, 0);
+    }
+
+    private int count(AccessibilityNodeInfo n, int depth) {
+        if (n == null || depth > 40) return 0;
+        int c = 1;
+        for (int i = 0; i < n.getChildCount(); i++) c += count(n.getChild(i), depth + 1);
+        return c;
     }
 
     private void scan(AccessibilityNodeInfo node, int depth) {
