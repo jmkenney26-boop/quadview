@@ -116,6 +116,13 @@ public class MainActivity extends Activity {
             }
         }));
 
+        right.addView(button("🤖 Auto-unlock (speed-click Developer Options)", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                AutoUnlock.start(MainActivity.this);
+            }
+        }));
+
         right.addView(button("🔍 Box debug check (is ADB on?)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {

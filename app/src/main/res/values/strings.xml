@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="helper_label">Quad View Unlock Helper</string>
+    <string name="helper_description">Only works when you press Auto-unlock in Quad View. It watches the Settings screen for a few seconds and switches on Developer options and freeform windows. It does nothing the rest of the time.</string>
+</resources>
