@@ -116,6 +116,13 @@ public class MainActivity extends Activity {
             }
         }));
 
+        right.addView(button("🔍 Box debug check (is ADB on?)", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                DebugCheck.run(MainActivity.this);
+            }
+        }));
+
         right.addView(button("Find hidden Developer Options", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -284,9 +291,10 @@ public class MainActivity extends Activity {
             new AlertDialog.Builder(this)
                     .setTitle("Blocked by the box")
                     .setMessage("This box doesn't let apps change this setting yet (" + error + ").\n\n"
-                            + "A one-time unlock fixes it for good: connect a USB-A to USB-A cable to your laptop and run\n\n"
+                            + "Possible fix: if your laptop can connect to the box with ADB over a USB cable, run\n\n"
                             + "adb shell pm grant com.quadview.app android.permission.WRITE_SECURE_SETTINGS\n\n"
-                            + "After that, this button works without the laptop.")
+                            + "Then this button can switch freeform on without the laptop. Whether the cable connects "
+                            + "depends on the box; use 'Box debug check' to see the odds.")
                     .setPositiveButton("OK", null)
                     .show();
         }
