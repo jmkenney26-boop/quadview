@@ -116,6 +116,13 @@ public class MainActivity extends Activity {
             }
         }));
 
+        right.addView(button("★ Settings Explorer (search hidden screens)", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(MainActivity.this, ExplorerActivity.class));
+            }
+        }));
+
         right.addView(button("Open full Android Settings (phone style)", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
