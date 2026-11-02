@@ -109,6 +109,13 @@ public class MainActivity extends Activity {
         });
         right.addView(gapsButton);
 
+        right.addView(button("⚡ Turn ON freeform windows", new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                turnOnFreeform();
+            }
+        }));
+
         right.addView(button("Find hidden Developer Options", new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -249,6 +256,43 @@ public class MainActivity extends Activity {
     // ---------- hidden settings screens ----------
 
     /** Tries every known way into Developer Options, including screens the box's menus hide. */
+    /** Writes the freeform settings directly. Works only if the box allows it or after a one-time ADB grant. */
+    private void turnOnFreeform() {
+        String[] keys = {
+                "development_settings_enabled",
+                "enable_freeform_support",
+                "force_resizable_activities",
+                "force_desktop_mode_on_external_displays",
+        };
+        int done = 0;
+        String error = null;
+        for (String k : keys) {
+            try {
+                if (Settings.Global.putInt(getContentResolver(), k, 1)) done++;
+            } catch (Throwable t) {
+                error = t.getClass().getSimpleName();
+            }
+        }
+        if (error == null && done > 0) {
+            new AlertDialog.Builder(this)
+                    .setTitle("It worked!")
+                    .setMessage("Freeform windows are switched on. Restart the box now (unplug it for 10 seconds), "
+                            + "then open Quad View and press Launch.")
+                    .setPositiveButton("OK", null)
+                    .show();
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Blocked by the box")
+                    .setMessage("This box doesn't let apps change this setting yet (" + error + ").\n\n"
+                            + "A one-time unlock fixes it for good: connect a USB-A to USB-A cable to your laptop and run\n\n"
+                            + "adb shell pm grant com.quadview.app android.permission.WRITE_SECURE_SETTINGS\n\n"
+                            + "After that, this button works without the laptop.")
+                    .setPositiveButton("OK", null)
+                    .show();
+        }
+        refresh();
+    }
+
     private void findDeveloperOptions() {
         openFirst("Developer Options",
                 component("com.android.tv.settings",
